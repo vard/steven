@@ -42,6 +42,7 @@ namespace steven {
 
 
     struct Session{
+        std::int64_t id;
         std::string homeLink;
         tm startDate;
         Course course;
