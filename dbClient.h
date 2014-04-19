@@ -15,7 +15,7 @@ class DBWriter : private boost::noncopyable{
         DBWriter(std::shared_ptr<mongo::DBClientConnection> dbConnection);
         virtual ~DBWriter();
 
-        virtual void addSessions(const std::vector<Session>& sessions) /* throw() */;
+        virtual void addSessions(const std::vector<std::shared_ptr<Session>>& sessions) /* throw() */;
 
 
     private:

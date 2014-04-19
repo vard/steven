@@ -10,9 +10,17 @@ CourseraCourseCollector::CourseraCourseCollector(std::shared_ptr<DBWriter> dbWri
 
 void CourseraCourseCollector::run()
     {
-        //run_(sessions).wait();
-        collectSessions().wait();
-    }
+    collectSessions().wait();
+}
+
+void CourseraCourseCollector::buildNewSessionAbdBuild(const json::value& val)
+{
+    auto session = std::make_shared<Session>();
+    session->id = val.at("courseId").as_integer();
+    session->homeLink = val.at("homeLink").as_string();
+    //session->startDate = costructDate(val["startDay"], val["startMonth"], val["startYear"]);
+    collectedSessions_.push_back(session);
+}
 
     pplx::task<void> CourseraCourseCollector::run_()
     {
@@ -39,7 +47,7 @@ void CourseraCourseCollector::run()
             // Handle error cases, for now return empty json value...
             return pplx::task_from_result(json::value());
         })
-        .then([](pplx::task<json::value> previousTask)
+        .then([&](pplx::task<json::value> previousTask)
         {
             try
             {
@@ -47,19 +55,28 @@ void CourseraCourseCollector::run()
                 //v.at("elements").at(0).serialize(std::cout);
 
                 auto sessions = v.at("elements").as_array();
-                std::for_each(std::begin(sessions), std::end(sessions), [](json::value curVal){
-                curVal.serialize(std::cout);
-                std::cout << std::endl;
-            });
-        }
-        catch (const std::exception& e)
-        {
-            // Print error.
-            std::wostringstream ss;
-            ss << e.what() << std::endl;
-            std::wcout << ss.str();
-        }
-    });
+                std::for_each(std::begin(sessions), std::end(sessions), [&](json::value curVal){
+                    buildNewSessionAbdBuild(curVal);
+                    curVal.serialize(std::cout);
+                    std::cout << std::endl;
+                });
+
+                this->dbWriter_->addSessions(collectedSessions_);
+            }
+            catch (const std::exception& e)
+            {
+                // Print error.
+                std::wostringstream ss;
+                ss << e.what() << std::endl;
+                std::wcout << ss.str();
+            }
+     });
+}
+
+tm constructDate(int d, int m, int y)
+{
+    tm date;
+    return date;
 }
 
 }
