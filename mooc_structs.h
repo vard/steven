@@ -19,17 +19,20 @@ namespace steven {
     };
 
     struct Category{
+            std::int32_t id;
             std::string name;
-            std::string shortName;
-            std::string description;
     };
 
     struct Course{
+            std::int64_t id;
             std::string shortName;
             std::string name;
             std::string language;
+            std::string smallIcon;
+            std::string recommendedBg;
             std::string aboutTheCourse;
-            std::list<Category>categories;
+            std::vector<int> categories;
+            std::vector<int> universities;
     };
 
     struct Instructor{
@@ -46,8 +49,7 @@ namespace steven {
         std::int64_t id;
         std::string homeLink;
         struct tm startDate;
-        Course course;
-        std::list<Instructor> instructors;
+        std::vector<int> instructors;
     };
 
 

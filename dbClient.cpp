@@ -2,6 +2,15 @@
 
 namespace steven{
 
+template<typename ElemType>
+mongo::BSONArray bsonArrFromVector(const std::vector<ElemType>& vect){
+    mongo::BSONArrayBuilder arrayBuilder;
+    std::for_each(std::begin(vect), std::end(vect), [&](ElemType elem){
+        arrayBuilder.append(elem);
+    });
+    return arrayBuilder.arr();
+}
+
 mongo::Date_t convert(const boost::posix_time::ptime& pt)
 {
     boost::posix_time::ptime epoch(boost::gregorian::date(1970,boost::date_time::Jan,1));
@@ -29,10 +38,14 @@ void DBWriter::addSessions(const std::vector<std::shared_ptr<Session>>& sessions
         mongo::Date_t  dt = convert(ptime);
 
 
+        auto instructors = bsonArrFromVector(session->instructors);
+
+
         mongo::BSONObj p = BSON( "csID" << session->id <<
                                  "ccID" << session->courseId <<
                                  "hl" << session->homeLink <<
-                                 "sd" << dt);
+                                 "sd" << dt <<
+                                 "ins" << instructors);
 
 
         conn_->update("steven.sessions",
@@ -46,6 +59,60 @@ void DBWriter::addSessions(const std::vector<std::shared_ptr<Session>>& sessions
     });
 }
 
+void DBWriter::addCourses(const std::vector<std::shared_ptr<Course> >& courses)
+{
+    std::for_each(std::begin(courses), std::end(courses), [&](const std::shared_ptr<Course>& course){
+
+        auto categories = bsonArrFromVector(course->categories);
+        auto universities = bsonArrFromVector(course->universities);
 
 
+        mongo::BSONObj p = BSON("ccID" << course->id <<
+                                "shNm" << course->shortName <<
+                                "name" << course->name <<
+                                "lang" << course->language <<
+                                "smIc" << course->smallIcon <<
+                                "rcBg" << course->recommendedBg <<
+                                "abt" << course->aboutTheCourse <<
+                                "cat" << categories <<
+                                "uns" << universities
+
+                                );
+
+
+
+
+
+        conn_->update("steven.courses",
+                      QUERY("ccID" << course->id),
+                      p, true, false);
+
+        std::string err = conn_->getLastError();
+        if(!err.empty()){
+            std::cout << "error: " << err;
+        }
+    });
 }
+
+void DBWriter::addCategories(const std::vector<std::shared_ptr<Category> >& categories)
+{
+    std::for_each(std::begin(categories), std::end(categories), [&](const std::shared_ptr<Category>& cat){
+
+        mongo::BSONObj p = BSON( "ctID" << cat->id <<
+                                 "name" << cat->name);
+
+        conn_->update("steven.categories",
+                      QUERY("ctID" << cat->id),
+                      p, true, false);
+
+        std::string err = conn_->getLastError();
+        if(!err.empty()){
+            std::cout << "error: " << err;
+        }
+    });
+}
+} // namespace steven
+
+
+
+

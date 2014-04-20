@@ -27,16 +27,28 @@ class CourseraCourseCollector : public ICourseCollector{
     private:
         void buildNewSessionAndInsert(const json::value& val);
         void buildNewCourseAndInsert(const json::value& val);
+        void buildNewCategoryAndInsert(const json::value& val);
 
         pplx::task<void> collectSessions();
         pplx::task<void> collectCourses();
+        pplx::task<void> collectCategories();
 
         std::vector<std::shared_ptr<Session>> collectedSessions_;
         std::vector<std::shared_ptr<Course>> collectedCourses_;
+        std::vector<std::shared_ptr<Category>> collectedCategories_;
 
         const char* sessionRequest(){
-            return "https://api.coursera.org/api/catalog.v1/sessions?fields=id,courseId,name,startDay,startMonth,startYear";
+            return "https://api.coursera.org/api/catalog.v1/sessions?fields=id,courseId,name,startDay,startMonth,startYear&includes=instructors";
         }
+
+        const char* coursesRequest(){
+            return "https://api.coursera.org/api/catalog.v1/courses?fields=id,shortName,name,language,smallIcon,recommendedBackground,aboutTheCourse,instructor&includes=categories,universities,instructors";
+        }
+
+        const char* categoriesRequest(){
+            return "https://api.coursera.org/api/catalog.v1/categories?fields=id,name";
+        }
+
 
         std::shared_ptr<DBWriter> dbWriter_;
 };
