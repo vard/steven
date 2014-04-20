@@ -33,7 +33,7 @@ class CourseraCourseCollector : public ICourseCollector{
         std::vector<std::shared_ptr<Session>> collectedSessions_;
 
         const char* sessionRequest(){
-            return "https://api.coursera.org/api/catalog.v1/sessions?fields=courseId,startDay,startMonth,startYear";
+            return "https://api.coursera.org/api/catalog.v1/sessions?fields=id,courseId,name,startDay,startMonth,startYear";
         }
 
     std::shared_ptr<DBWriter> dbWriter_;

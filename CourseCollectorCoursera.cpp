@@ -2,6 +2,8 @@
 
 namespace steven{
 
+
+
 CourseraCourseCollector::CourseraCourseCollector(std::shared_ptr<DBWriter> dbWriter)
     :dbWriter_(dbWriter)
 {
@@ -15,11 +17,28 @@ void CourseraCourseCollector::run()
 
 void CourseraCourseCollector::buildNewSessionAbdBuild(const json::value& val)
 {
-    auto session = std::make_shared<Session>();
-    session->id = val.at("courseId").as_integer();
-    session->homeLink = val.at("homeLink").as_string();
-    //session->startDate = costructDate(val["startDay"], val["startMonth"], val["startYear"]);
-    collectedSessions_.push_back(session);
+    try{
+        auto session = std::make_shared<Session>();
+        session->id = val.at("id").as_integer();
+        session->courseId = val.at("courseId").as_integer();
+        session->homeLink = val.at("homeLink").as_string();
+        //session->startDate = costructDate(val["startDay"], val["startMonth"], val["startYear"]);
+
+        tm tmStruct;
+        tmStruct.tm_sec = 0;
+        tmStruct.tm_min = 0;
+        tmStruct.tm_hour = 0;
+        tmStruct.tm_mday = val.at("startDay").as_integer();
+        tmStruct.tm_mon = val.at("startMonth").as_integer();
+        tmStruct.tm_year = (val.at("startYear").as_integer() - 1900);
+        tmStruct.tm_isdst = -1;
+
+        session->startDate = tmStruct;
+
+        collectedSessions_.push_back(session);
+    } catch (const std::exception& ex){
+        std::cout << "caught exception: " << ex.what() << std::endl;
+    }
 }
 
     pplx::task<void> CourseraCourseCollector::run_()

@@ -42,9 +42,10 @@ namespace steven {
 
 
     struct Session{
+        std::int64_t courseId;
         std::int64_t id;
         std::string homeLink;
-        tm startDate;
+        struct tm startDate;
         Course course;
         std::list<Instructor> instructors;
     };
