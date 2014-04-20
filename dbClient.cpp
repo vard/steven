@@ -111,6 +111,48 @@ void DBWriter::addCategories(const std::vector<std::shared_ptr<Category> >& cate
         }
     });
 }
+
+void DBWriter::addUniversities(const std::vector<std::shared_ptr<University> >& universities)
+{
+    std::for_each(std::begin(universities), std::end(universities), [&](const std::shared_ptr<University>& uni){
+
+        mongo::BSONObj p = BSON( "cuID" << uni->id <<
+                                 "name" << uni->name <<
+                                 "hl" << uni->homeLink <<
+                                 "webs" << uni->website);
+
+        conn_->update("steven.universities",
+                      QUERY("cuID" << uni->id),
+                      p, true, false);
+
+        std::string err = conn_->getLastError();
+        if(!err.empty()){
+            std::cout << "error: " << err;
+        }
+    });
+}
+
+void DBWriter::addInstructors(const std::vector<std::shared_ptr<Instructor> >& instructors)
+{
+    std::for_each(std::begin(instructors), std::end(instructors), [&](const std::shared_ptr<Instructor>& ins){
+
+        mongo::BSONObj p = BSON( "ciID" << ins->id <<
+                                 "phto" << ins->photo <<
+                                 "fn" << ins->firstName <<
+                                 "ln" << ins->lastName <<
+                                 "ttle" << ins->title);
+
+        conn_->update("steven.instructors",
+                      QUERY("ciID" << ins->id),
+                      p, true, false);
+
+        std::string err = conn_->getLastError();
+        if(!err.empty()){
+            std::cout << "error: " << err;
+        }
+    });
+}
+
 } // namespace steven
 
 

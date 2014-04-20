@@ -11,11 +11,11 @@
 namespace steven {
 
     struct University{
+            std::int32_t id;
             std::string name;
             std::string shortName;
-            std::string description;
             std::string homeLink;
-            std::string webSite;
+            std::string website;
     };
 
     struct Category{
@@ -36,11 +36,11 @@ namespace steven {
     };
 
     struct Instructor{
+            std::int32_t id;
             std::string firstName;
             std::string lastName;
             std::string title;
-            std::string photoUrl;
-            std::string photoUrl150;
+            std::string photo;
     };
 
 

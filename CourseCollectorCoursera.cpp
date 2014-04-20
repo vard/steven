@@ -13,6 +13,8 @@ void CourseraCourseCollector::run()
     collectSessions().wait();
     collectCourses().wait();
     collectCategories().wait();
+    collectUniversities().wait();
+    collectInstructors().wait();
 }
 
 void CourseraCourseCollector::buildNewSessionAndInsert(const json::value& val)
@@ -83,6 +85,37 @@ void CourseraCourseCollector::buildNewCategoryAndInsert(const json::value& val)
         category->name = val.at("name").as_string();
 
         collectedCategories_.push_back(category);
+    } catch (const std::exception& ex){
+        std::cout << "caught exception: " << ex.what() << std::endl;
+    }
+}
+
+void CourseraCourseCollector::buildNewUniversityAndInsert(const json::value& val)
+{
+    try{
+        auto university = std::make_shared<University>();
+        university->id = val.at("id").as_integer();
+        university->name = val.at("name").as_string();
+        university->homeLink = val.at("homeLink").as_string();
+        university->website = val.at("website").as_string();
+
+        collectedUniversities_.push_back(university);
+    } catch (const std::exception& ex){
+        std::cout << "caught exception: " << ex.what() << std::endl;
+    }
+}
+
+void CourseraCourseCollector::buildNewInstructorAndInsert(const json::value& val)
+{
+    try{
+        auto instructor = std::make_shared<Instructor>();
+        instructor->id = val.at("id").as_integer();
+        instructor->photo = val.at("photo").as_string();
+        instructor->firstName = val.at("firstName").as_string();
+        instructor->lastName = val.at("lastName").as_string();
+        instructor->title = val.at("title").as_string();
+
+        collectedInstructors_.push_back(instructor);
     } catch (const std::exception& ex){
         std::cout << "caught exception: " << ex.what() << std::endl;
     }
@@ -204,6 +237,90 @@ pplx::task<void> CourseraCourseCollector::collectCategories()
                  });
 
             this->dbWriter_->addCategories(collectedCategories_);
+        }
+        catch (const std::exception& e)
+        {
+            // Print error.
+            std::wostringstream ss;
+            ss << e.what() << std::endl;
+            std::wcout << ss.str();
+        }
+    });
+}
+
+pplx::task<void> CourseraCourseCollector::collectUniversities()
+{
+    using namespace web;
+    using namespace web::http;
+    using namespace web::http::client;
+
+    web::http::client::http_client client(universitiesRequest());
+
+    // Make the request and asynchronously process the response.
+    return client.request(methods::GET).then([](http_response response) -> pplx::task<json::value>
+    {
+        if(response.status_code() == status_codes::OK)
+        {
+            return response.extract_json();
+        }
+         // Handle error cases, for now return empty json value...
+        return pplx::task_from_result(json::value());
+    })
+    .then([&](pplx::task<json::value> previousTask)
+    {
+        try
+        {
+            const json::value& v = previousTask.get();
+             auto elems = v.at("elements").as_array();
+             std::for_each(std::begin(elems), std::end(elems), [&](json::value curVal){
+                 buildNewUniversityAndInsert(curVal);
+                 curVal.serialize(std::cout);
+                 std::cout << std::endl;
+                 });
+
+            this->dbWriter_->addUniversities(collectedUniversities_);
+        }
+        catch (const std::exception& e)
+        {
+            // Print error.
+            std::wostringstream ss;
+            ss << e.what() << std::endl;
+            std::wcout << ss.str();
+        }
+    });
+}
+
+pplx::task<void> CourseraCourseCollector::collectInstructors()
+{
+    using namespace web;
+    using namespace web::http;
+    using namespace web::http::client;
+
+    web::http::client::http_client client(instructorsRequest());
+
+    // Make the request and asynchronously process the response.
+    return client.request(methods::GET).then([](http_response response) -> pplx::task<json::value>
+    {
+        if(response.status_code() == status_codes::OK)
+        {
+            return response.extract_json();
+        }
+         // Handle error cases, for now return empty json value...
+        return pplx::task_from_result(json::value());
+    })
+    .then([&](pplx::task<json::value> previousTask)
+    {
+        try
+        {
+            const json::value& v = previousTask.get();
+             auto elems = v.at("elements").as_array();
+             std::for_each(std::begin(elems), std::end(elems), [&](json::value curVal){
+                 buildNewInstructorAndInsert(curVal);
+                 curVal.serialize(std::cout);
+                 std::cout << std::endl;
+                 });
+
+            this->dbWriter_->addInstructors(collectedInstructors_);
         }
         catch (const std::exception& e)
         {

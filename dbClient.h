@@ -18,6 +18,8 @@ class DBWriter : private boost::noncopyable{
         virtual void addSessions(const std::vector<std::shared_ptr<Session>>& sessions) /* throw() */;
         virtual void addCourses(const std::vector<std::shared_ptr<Course>>& courses) /* throw() */;
         virtual void addCategories(const std::vector<std::shared_ptr<Category>>& categories) /* throw() */;
+        virtual void addUniversities(const std::vector<std::shared_ptr<University>>& universities) /* throw() */;
+        virtual void addInstructors(const std::vector<std::shared_ptr<Instructor>>& instructors) /* throw() */;
 
 
     private:
