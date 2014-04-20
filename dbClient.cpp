@@ -29,21 +29,20 @@ void DBWriter::addSessions(const std::vector<std::shared_ptr<Session>>& sessions
         mongo::Date_t  dt = convert(ptime);
 
 
-        mongo::BSONObj p = BSON("$addToSet" << BSON( "csId" << session->id <<
-                                                     "ccID" << session->courseId <<
-                                                     "hl" << session->homeLink <<
-                                                     "sd" << dt));
+        mongo::BSONObj p = BSON( "csID" << session->id <<
+                                 "ccID" << session->courseId <<
+                                 "hl" << session->homeLink <<
+                                 "sd" << dt);
 
 
         conn_->update("steven.sessions",
                       QUERY("csID" << session->id),
-                      p, false, false);
+                      p, true, false);
 
         std::string err = conn_->getLastError();
         if(!err.empty()){
             std::cout << "error: " << err;
         }
-        //conn_->insert("steven.sessions", p);
     });
 }
 

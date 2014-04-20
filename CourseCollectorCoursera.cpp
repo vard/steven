@@ -2,8 +2,6 @@
 
 namespace steven{
 
-
-
 CourseraCourseCollector::CourseraCourseCollector(std::shared_ptr<DBWriter> dbWriter)
     :dbWriter_(dbWriter)
 {
@@ -15,7 +13,7 @@ void CourseraCourseCollector::run()
     collectSessions().wait();
 }
 
-void CourseraCourseCollector::buildNewSessionAbdBuild(const json::value& val)
+void CourseraCourseCollector::buildNewSessionAndInsert(const json::value& val)
 {
     try{
         auto session = std::make_shared<Session>();
@@ -41,55 +39,57 @@ void CourseraCourseCollector::buildNewSessionAbdBuild(const json::value& val)
     }
 }
 
-    pplx::task<void> CourseraCourseCollector::run_()
+void CourseraCourseCollector::buildNewCourseAndInsert(const json::value& val)
+{
+
+}
+
+pplx::task<void> CourseraCourseCollector::collectSessions()
+{
+    using namespace web;
+    using namespace web::http;
+    using namespace web::http::client;
+
+    web::http::client::http_client client(sessionRequest());
+
+    // Make the request and asynchronously process the response.
+    return client.request(methods::GET).then([](http_response response) -> pplx::task<json::value>
     {
-        collectSessions();
-
-    }
-
-    pplx::task<void> CourseraCourseCollector::collectSessions()
+        if(response.status_code() == status_codes::OK)
+        {
+            return response.extract_json();
+        }
+         // Handle error cases, for now return empty json value...
+        return pplx::task_from_result(json::value());
+    })
+    .then([&](pplx::task<json::value> previousTask)
     {
-        using namespace web;
-        using namespace web::http;
-        using namespace web::http::client;
-
-        web::http::client::http_client client(sessionRequest());
-
-        // Make the request and asynchronously process the response.
-        return client.request(methods::GET).then([](http_response response) -> pplx::task<json::value>
+        try
         {
-            if(response.status_code() == status_codes::OK)
-            {
-                return response.extract_json();
-            }
+            const json::value& v = previousTask.get();
+            //v.at("elements").at(0).serialize(std::cout);
+             auto sessions = v.at("elements").as_array();
+             std::for_each(std::begin(sessions), std::end(sessions), [&](json::value curVal){
+                 buildNewSessionAndInsert(curVal);
+                 curVal.serialize(std::cout);
+                 std::cout << std::endl;
+                 });
 
-            // Handle error cases, for now return empty json value...
-            return pplx::task_from_result(json::value());
-        })
-        .then([&](pplx::task<json::value> previousTask)
+            this->dbWriter_->addSessions(collectedSessions_);
+        }
+        catch (const std::exception& e)
         {
-            try
-            {
-                const json::value& v = previousTask.get();
-                //v.at("elements").at(0).serialize(std::cout);
+            // Print error.
+            std::wostringstream ss;
+            ss << e.what() << std::endl;
+            std::wcout << ss.str();
+        }
+    });
+}
 
-                auto sessions = v.at("elements").as_array();
-                std::for_each(std::begin(sessions), std::end(sessions), [&](json::value curVal){
-                    buildNewSessionAbdBuild(curVal);
-                    curVal.serialize(std::cout);
-                    std::cout << std::endl;
-                });
+pplx::task<void> CourseraCourseCollector::collectCourses()
+{
 
-                this->dbWriter_->addSessions(collectedSessions_);
-            }
-            catch (const std::exception& e)
-            {
-                // Print error.
-                std::wostringstream ss;
-                ss << e.what() << std::endl;
-                std::wcout << ss.str();
-            }
-     });
 }
 
 tm constructDate(int d, int m, int y)

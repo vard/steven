@@ -22,21 +22,23 @@ class CourseraCourseCollector : public ICourseCollector{
 
     public:
         CourseraCourseCollector(std::shared_ptr<DBWriter> dbWriter);
-        virtual ~CourseraCourseCollector(){};
+        virtual ~CourseraCourseCollector(){}
         virtual void run() /* throw() */;
     private:
-        void buildNewSessionAbdBuild(const json::value& val);
+        void buildNewSessionAndInsert(const json::value& val);
+        void buildNewCourseAndInsert(const json::value& val);
 
-        pplx::task<void> run_();
         pplx::task<void> collectSessions();
+        pplx::task<void> collectCourses();
 
         std::vector<std::shared_ptr<Session>> collectedSessions_;
+        std::vector<std::shared_ptr<Course>> collectedCourses_;
 
         const char* sessionRequest(){
             return "https://api.coursera.org/api/catalog.v1/sessions?fields=id,courseId,name,startDay,startMonth,startYear";
         }
 
-    std::shared_ptr<DBWriter> dbWriter_;
+        std::shared_ptr<DBWriter> dbWriter_;
 };
 
 
