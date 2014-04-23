@@ -59,6 +59,7 @@ void CourseraCourseCollector::buildNewCourseAndInsert(const json::value& val)
         course->recommendedBg = val.at("recommendedBackground").as_string();
         course->aboutTheCourse = val.at("aboutTheCourse").as_string();
         course->language = val.at("language").as_string();
+        course->name = val.at("name").as_string();
 
 
         auto categories = val.at("links").at("categories").as_array();
