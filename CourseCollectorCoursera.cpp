@@ -321,6 +321,7 @@ pplx::task<void> CourseraCourseCollector::collectInstructors()
                  std::cout << std::endl;
                  });
 
+            std::cout << "Collected instructors count: " << collectedInstructors_.size();
             this->dbWriter_->addInstructors(collectedInstructors_);
         }
         catch (const std::exception& e)

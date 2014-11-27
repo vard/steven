@@ -60,7 +60,7 @@ class CourseraCourseCollector : public ICourseCollector{
         }
 
         const char* instructorsRequest(){
-            return "https://api.coursera.org/api/catalog.v1/instructors?fields=id,photo,firstNme,lastName";
+            return "https://api.coursera.org/api/catalog.v1/instructors?fields=id,photo,firstNme,lastName,title";
         }
 
 

@@ -136,6 +136,7 @@ void DBWriter::addInstructors(const std::vector<std::shared_ptr<Instructor> >& i
 {
     std::for_each(std::begin(instructors), std::end(instructors), [&](const std::shared_ptr<Instructor>& ins){
 
+        // std::cout << "put instuctor " << ins->id << std::endl;
         mongo::BSONObj p = BSON( "ciID" << ins->id <<
                                  "phto" << ins->photo <<
                                  "fn" << ins->firstName <<
